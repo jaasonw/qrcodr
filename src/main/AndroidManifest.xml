@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <application
+      android:allowBackup="false"
+      android:icon="@drawable/ic_qr"
+      android:label="QR code">
+
+    <!-- Empty taskAffinity + excludeFromRecents: the popup floats over the sharing app
+         instead of joining or opening its own task. -->
+    <activity
+        android:name=".QrActivity"
+        android:excludeFromRecents="true"
+        android:exported="true"
+        android:noHistory="true"
+        android:taskAffinity=""
+        android:theme="@android:style/Theme.DeviceDefault.Dialog.NoActionBar">
+      <intent-filter>
+        <action android:name="android.intent.action.SEND" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="text/plain" />
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>
