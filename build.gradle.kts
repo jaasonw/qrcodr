@@ -12,8 +12,21 @@ android {
     versionName = "1.0"
   }
 
+  // Release key lives outside the repo, in ~/.gradle/gradle.properties. Without it the release
+  // APK is built unsigned.
+  val storeFile = providers.gradleProperty("qrcodr.storeFile").orNull
+  if (storeFile != null) {
+    signingConfigs.create("release") {
+      this.storeFile = file(storeFile)
+      storePassword = providers.gradleProperty("qrcodr.storePassword").get()
+      keyAlias = providers.gradleProperty("qrcodr.keyAlias").get()
+      keyPassword = providers.gradleProperty("qrcodr.keyPassword").get()
+    }
+  }
+
   buildTypes {
     release {
+      signingConfig = signingConfigs.findByName("release")
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
