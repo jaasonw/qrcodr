@@ -31,20 +31,37 @@ fun extractLink(text: String): String =
 
 /** Removes known tracking query parameters. Fragment and remaining parameter order are kept. */
 fun stripTrackers(url: String): String {
-  val hashAt = url.indexOf('#')
-  val fragment = if (hashAt >= 0) url.substring(hashAt) else ""
-  val beforeFragment = if (hashAt >= 0) url.substring(0, hashAt) else url
-  val queryAt = beforeFragment.indexOf('?')
-  if (queryAt < 0) return url
-
-  val base = beforeFragment.substring(0, queryAt)
-  val host = base.substringAfter("://").substringBefore('/').substringAfterLast('@').substringBefore(':').lowercase()
+  val parts = UrlParts.parse(url)
+  val host = parts.base.substringAfter("://").substringBefore('/').substringAfterLast('@').substringBefore(':').lowercase()
   val hostSpecific = hostTrackerParams.entries.filter { host == it.key || host.endsWith("." + it.key) }.flatMap { it.value }
+  return parts
+      .copy(
+          params =
+              parts.params.filter { param ->
+                val name = param.substringBefore('=').lowercase()
+                !name.startsWith("utm_") && name !in trackerParams && name !in hostSpecific
+              })
+      .toString()
+}
 
-  val kept =
-      beforeFragment.substring(queryAt + 1).split('&').filter { param ->
-        val name = param.substringBefore('=').lowercase()
-        param.isNotEmpty() && !name.startsWith("utm_") && name !in trackerParams && name !in hostSpecific
-      }
-  return base + (if (kept.isEmpty()) "" else "?" + kept.joinToString("&")) + fragment
+/** A URL split around its query string. [params] holds raw `name=value` pieces, never empty ones. */
+data class UrlParts(val base: String, val params: List<String>, val fragment: String) {
+  override fun toString() = base + (if (params.isEmpty()) "" else "?" + params.joinToString("&")) + fragment
+
+  fun without(index: Int) = copy(params = params.filterIndexed { i, _ -> i != index })
+
+  companion object {
+    fun parse(url: String): UrlParts {
+      val hashAt = url.indexOf('#')
+      val fragment = if (hashAt >= 0) url.substring(hashAt) else ""
+      val beforeFragment = if (hashAt >= 0) url.substring(0, hashAt) else url
+      val queryAt = beforeFragment.indexOf('?')
+      if (queryAt < 0) return UrlParts(beforeFragment, emptyList(), fragment)
+      return UrlParts(
+          beforeFragment.substring(0, queryAt),
+          beforeFragment.substring(queryAt + 1).split('&').filter { it.isNotEmpty() },
+          fragment,
+      )
+    }
+  }
 }

@@ -20,4 +20,12 @@ class LinksTest {
     assertEquals("https://other.com/?si=keep&t=keep", stripTrackers("https://other.com/?si=keep&t=keep"))
     assertEquals("https://a.com/no-query", stripTrackers("https://a.com/no-query"))
   }
+
+  @Test
+  fun removesSingleParam() {
+    val parts = UrlParts.parse("https://a.com/p?a=1&b=2&c#frag")
+    assertEquals(listOf("a=1", "b=2", "c"), parts.params)
+    assertEquals("https://a.com/p?a=1&c#frag", parts.without(1).toString())
+    assertEquals("https://a.com/p#frag", parts.copy(params = emptyList()).toString())
+  }
 }
