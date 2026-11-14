@@ -3,7 +3,7 @@
 
   <application
       android:allowBackup="false"
-      android:icon="@drawable/ic_qr"
+      android:icon="@drawable/ic_launcher"
       android:label="QR code">
 
     <!-- Empty taskAffinity + excludeFromRecents: the popup floats over the sharing app
@@ -15,6 +15,10 @@
         android:noHistory="true"
         android:taskAffinity=""
         android:theme="@android:style/Theme.DeviceDefault.Dialog.NoActionBar">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
       <intent-filter>
         <action android:name="android.intent.action.SEND" />
         <category android:name="android.intent.category.DEFAULT" />

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive icon: launchers mask the 108dp layer, so the QR glyph is inset into the 72dp safe zone. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+  <background android:drawable="@android:color/white" />
+  <foreground>
+    <inset
+        android:drawable="@drawable/ic_qr"
+        android:inset="25%" />
+  </foreground>
+</adaptive-icon>

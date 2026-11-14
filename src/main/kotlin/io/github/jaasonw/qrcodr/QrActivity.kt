@@ -36,13 +36,17 @@ class QrActivity : Activity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val shared = intent?.takeIf { it.action == Intent.ACTION_SEND }?.getStringExtra(Intent.EXTRA_TEXT)
-    if (shared.isNullOrBlank()) return finish()
+    if (intent?.action == Intent.ACTION_SEND && shared.isNullOrBlank()) return finish()
+    // Opened from the launcher: start empty with the keyboard up, ready to paste.
+    val fromLauncher = shared == null
 
     sizePx = (minOf(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels) * 0.75).toInt()
     pad = (16 * resources.displayMetrics.density).toInt()
 
     window.attributes = window.attributes.apply { screenBrightness = 1f }
-    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+    window.setSoftInputMode(
+        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
+            if (fromLauncher) WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE else 0)
     setFinishOnTouchOutside(true)
 
     qr = ImageView(this)
@@ -55,7 +59,8 @@ class QrActivity : Activity() {
           maxLines = 4
           setOnEditorActionListener { _, _, _ -> clearFocus().let { true } }
           textSize = 14f
-          setText(stripTrackers(extractLink(shared)))
+          hint = "Paste a link"
+          setText(shared?.let { stripTrackers(extractLink(it)) } ?: "")
           addTextChangedListener(
               object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
@@ -102,6 +107,7 @@ class QrActivity : Activity() {
               })
         })
     render()
+    if (fromLauncher) link.requestFocus()
   }
 
   private fun render() {
